@@ -183,6 +183,20 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--tex
 .btn-fb-submit:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(123,47,190,.4)}
 .fb-done{display:none;margin-top:1rem;background:rgba(6,214,160,.1);border:1px solid rgba(6,214,160,.3);border-radius:9px;padding:.8rem 1rem;font-size:.85rem;color:var(--teal);font-weight:600}
 .cfbox{position:fixed;inset:0;pointer-events:none;z-index:8000;overflow:hidden}
+/* LOCKDOWN */
+#s-quiz *{user-select:none}
+#s-quiz .ed-ta{user-select:text}
+.toast-wrap{position:fixed;bottom:1.1rem;right:1.1rem;z-index:9500;display:flex;flex-direction:column;gap:.5rem;align-items:flex-end}
+.toast{background:var(--card);border:1.5px solid var(--coral);color:var(--text);padding:.6rem .95rem;border-radius:9px;font-size:.76rem;max-width:280px;box-shadow:0 6px 20px rgba(0,0,0,.4);animation:toastIn .2s ease}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.integrity-box{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:1.1rem 1.25rem;margin:1.5rem 0;text-align:left}
+.integrity-box.flagged{border-color:var(--coral)}
+.integrity-box.clean{border-color:var(--teal)}
+.ib-title{font-size:.85rem;font-weight:700;margin-bottom:.7rem;display:flex;align-items:center;gap:.4rem}
+.ib-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem .9rem}
+@media(max-width:480px){.ib-grid{grid-template-columns:1fr}}
+.ib-row{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);border-bottom:1px solid var(--border);padding:.3rem 0}
+.ib-row b{color:var(--text)}
 .cfp{position:absolute;top:-15px;border-radius:2px;animation:cfall linear forwards}
 @keyframes cfall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
 </style>
@@ -209,7 +223,7 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--tex
     <div class="name-err" id="nameErr">⚠️ Please enter your name to begin.</div>
   </div>
   <button class="btn-begin" onclick="beginQuiz()">🚀 Start The Exam</button>
-  <p class="warn-note">⚠️ Once you begin, <strong>do not refresh or close</strong> this page — your answers will be lost.<br>Work through all four sections and click Submit at the very end.</p>
+  <p class="warn-note">⚠️ Once you begin, <strong>do not refresh or close</strong> this page — your answers will be lost.<br>Work through all four sections and click Submit at the very end.<br><br>🔒 This exam runs in <strong>fullscreen mode</strong>. Leaving fullscreen, switching tabs/apps, right-clicking, or using copy/paste and dev-tools shortcuts is <strong>tracked</strong> and included in your submitted report.</p>
 </div>
 
 <!-- SECTION INTROS -->
@@ -286,6 +300,7 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--tex
       <p class="motive" id="rMotive"></p>
       <div class="breakdown" id="rBreakdown"></div>
     </div>
+    <div id="rIntegrity"></div>
     <div id="rReview"></div>
     <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem">
       <button style="background:var(--card);border:1.5px solid var(--border);color:var(--text);padding:.68rem 1.35rem;border-radius:9px;font-family:'Space Grotesk',sans-serif;font-size:.86rem;font-weight:600;cursor:pointer" onclick="window.print()">🖨️ Print Results</button>
@@ -332,6 +347,17 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--tex
     <button class="modal-btn" onclick="document.getElementById('blockModal').classList.remove('show')">Go Back to Exam</button>
   </div>
 </div>
+
+<!-- FULLSCREEN RESUME MODAL -->
+<div class="overlay" id="fsModal">
+  <div class="modal">
+    <div class="modal-ico">🔒</div>
+    <div class="modal-title">You Left Fullscreen</div>
+    <div class="modal-body">This has been <strong>recorded</strong> in your exam integrity report.<br><br>Click below to return to fullscreen and continue your exam.</div>
+    <button class="modal-btn" onclick="resumeFullscreen()">Resume Fullscreen</button>
+  </div>
+</div>
+<div class="toast-wrap" id="toastWrap"></div>
 <div class="cfbox" id="cf"></div>
 
 <script>
@@ -353,171 +379,136 @@ function showScreen(id){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ═══════ DATA ═══════
+// ═══════ LOCKDOWN / INTEGRITY MONITORING ═══════
+// Best-effort, no-install anti-cheat layer for an unproctored take-home exam.
+// None of this is unbeatable -- it raises the bar and gives a paper trail,
+// it does not physically prevent a determined student from cheating.
+let lockdownActive=false;
+let violations=[];
+let awayStart=null, totalAwayMs=0;
+let fsExitCount=0, tabSwitchCount=0, blockedKeyCount=0, devtoolsFlagCount=0, copyPasteCount=0;
 
-// MCQ × 20 = 20 marks
-// Removed: Q on == (assign), Q on # comment, Q on int(input)
-// Added 3 new simple basics + kept Python history 5
-const MCQ=[
-  // Python knowledge (5) — from advance slide
-  {q:"Who created the Python programming language?",o:["James Gosling","Guido van Rossum","Linus Torvalds","Dennis Ritchie"],a:1},
-  {q:"What was the <strong>first version</strong> of Python that was publicly released?",o:["Python 3.0","Python 2.0","Python 1.0","Python 0.5"],a:2},
-  {q:"Which of these is the <strong>current major version</strong> of Python widely used today?",o:["Python 1","Python 2","Python 3","Python 4"],a:2},
-  {q:"What is <strong>Jupyter Notebook</strong>?",o:["A type of Python variable only","An environment where you can write Python code","A Python game library to write code","A file format for storing Python code"],a:1},
-  {q:"Which of the following is also a <strong>programming language</strong>?",o:["Microsoft Word","Google Chrome","Java","Adobe Photoshop"],a:2},
-  // Python basics (15)
-  {q:"What is a <strong>variable</strong> in Python?",o:["A type of loop","A container that stores a value","A built-in function to store a value","A Python file name"],a:1},
-  {q:"Which line correctly stores the number <strong>10</strong> in a variable called <code>x</code>?",o:["10 = x","x == 10","x = 10","variable x = 10"],a:2},
-  {q:"What does <code>print(\"Hello\")</code> do?",o:["Saves the word to a file","Deletes the word","Displays Hello on the screen","Creates a variable called Hello"],a:2},
-  {q:"Which data type stores <strong>whole numbers</strong> like 5 or 100?",o:["float","string","bool","int"],a:3},
-  {q:"What data type is <code>\"Python\"</code>?",o:["int","float","string","bool"],a:2},
-  {q:"What does <code>input()</code> always return?",o:["An integer","A float","A string","A list"],a:2},
-  // 3 NEW simple replacements
-  {q:"Which symbol is used to <strong>assign</strong> a value to a variable in Python?",o:["==","=>","=","!="],a:2},
-  {q:"What is the correct way to create a <strong>list</strong> called <code>colours</code> with three items?",o:['colours = ("red","blue","green")',' colours = {"red","blue","green"}','colours = ["red","blue","green"]','colours = <"red","blue","green">'],a:2},
-  {q:"Which of these prints the <strong>first item</strong> from a list called <code>items</code>?",o:["print(items[1])","print(items[0])","print(items.first())","print(items(0))"],a:1},
-  // more basics
-  {q:"What does the <code>%</code> operator give you?",o:["The result of division","The remainder after division","The percentage","The square of a number"],a:1},
-  {q:"Which keyword is used to make a <strong>decision</strong> in Python?",o:["for","while","if","def"],a:2},
-  {q:"What is the output of this code?\n<div class='code-snip'><span class='kw'>for</span> i <span class='kw'>in</span> <span class='fn'>range</span>(<span class='nm'>3</span>):\n    <span class='fn'>print</span>(i)</div>",o:["1 2 3","0 1 2","3 3 3","0 1 2 3"],a:1},
-  {q:"What will this code print?\n<div class='code-snip'><span class='vr'>x</span> = <span class='nm'>8</span>\n<span class='kw'>if</span> x > <span class='nm'>5</span>:\n    <span class='fn'>print</span>(<span class='st'>\"Big\"</span>)\n<span class='kw'>else</span>:\n    <span class='fn'>print</span>(<span class='st'>\"Small\"</span>)</div>",o:["Small","Big","8","Nothing"],a:1},
-  {q:"Which of these correctly adds an item to the <strong>end</strong> of a list called <code>fruits</code>?",o:["fruits.add(\"mango\")","fruits.insert(\"mango\")","fruits.append(\"mango\")","fruits.push(\"mango\")"],a:2},
-  {q:"A <code>float</code> in Python is a number that:",o:["Has no decimal point","Has a decimal point like 3.14","Is always negative","Cannot be stored in a variable"],a:1},
-];
+function logViolation(type,detail){
+  violations.push({type,detail,t:Date.now()});
+  showToast('⚠️ '+detail+' — recorded');
+}
+function showToast(msg){
+  const wrap=document.getElementById('toastWrap');
+  const el=document.createElement('div');
+  el.className='toast';
+  el.textContent=msg;
+  wrap.appendChild(el);
+  setTimeout(()=>el.remove(),3200);
+}
 
-// T/F × 10 = 20 marks
-// Removed: tuple, == assign question
-// All basics only — variables, print, input, operators, loops, lists
-const TF=[
-  {q:"In Python, <code>print()</code> displays output on the screen.",a:true},
-  {q:"A variable name in Python can start with a number. For example, <code>1name = \"Ali\"</code> is valid.",a:false,correct:"False — variable names cannot start with a number. Start with a letter instead."},
-  {q:"The <code>input()</code> function always returns a <strong>string</strong>, even if the user types a number.",a:true},
-  {q:"In Python, you use a single <code>=</code> sign to <strong>assign</strong> a value to a variable.",a:true},
-  {q:"A <code>float</code> stores a number with a decimal point, such as 3.14 or 9.99.",a:true},
-  {q:"List indexing in Python starts at <strong>1</strong>. So the first item is at position 1.",a:false,correct:"False — list indexing starts at 0. The first item is at index 0."},
-  {q:"The <code>for</code> loop can use <code>range()</code> to repeat code a fixed number of times.",a:true},
-  {q:"<code>range(5)</code> in a for loop will repeat the loop 5 times, giving values 0, 1, 2, 3, and 4.",a:true},
-  {q:"In Python, you can use <code>.append()</code> to add a new item to the end of a list.",a:true},
-  {q:"The <code>len()</code> function is used to count how many items are in a list.",a:true},
-];
+function requestExamFullscreen(){
+  const el=document.documentElement;
+  const req=el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen||el.msRequestFullscreen;
+  if(req){ try{ req.call(el).catch(()=>{}); }catch(e){} }
+}
+function isFullscreen(){
+  return !!(document.fullscreenElement||document.webkitFullscreenElement||document.mozFullScreenElement||document.msFullscreenElement);
+}
+function resumeFullscreen(){
+  document.getElementById('fsModal').classList.remove('show');
+  requestExamFullscreen();
+}
+function onFsChange(){
+  if(lockdownActive && !isFullscreen()){
+    fsExitCount++;
+    logViolation('fullscreen_exit','Left fullscreen mode');
+    document.getElementById('fsModal').classList.add('show');
+  }
+}
+['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange'].forEach(ev=>document.addEventListener(ev,onFsChange));
 
-// DnD × 2 = 20 marks (10 each)
-const DND=[
-  {title:"Puzzle 1 — Print a greeting",desc:"These 4 lines of Python code ask for a name and print a greeting. Drag them into the correct order.",pts:10,
-   lines:[{text:`print("Hello, " + name)`,order:2},{text:`name = input("Enter your name: ")`,order:0},{text:`age = 16`,order:1},{text:`print("You are", age, "years old")`,order:3}]},
-  {title:"Puzzle 2 — Check a score",desc:"These 5 lines form a complete if/else program that checks a score. Drag them into the correct order.",pts:10,
-   lines:[{text:`else:`,order:3},{text:`score = int(input("Enter score: "))`,order:0},{text:`    print("You passed! Well done!")`,order:2},{text:`if score >= 50:`,order:1},{text:`    print("Keep trying! You can do it!")`,order:4}]},
-];
+document.addEventListener('visibilitychange',()=>{
+  if(!lockdownActive) return;
+  if(document.hidden){
+    awayStart=Date.now();
+    tabSwitchCount++;
+    logViolation('tab_switch','Switched away from the exam tab/window');
+  } else if(awayStart){
+    totalAwayMs+=Date.now()-awayStart;
+    awayStart=null;
+  }
+});
 
-// PRACTICAL × 7 = 40 marks
-// Tasks 1-6: 5 marks each = 30
-// Task 7 (list + loop): 10 marks = 10
-// Total = 40
-const PRAC=[
-  {
-    id:'p1',title:"Task 1 — Create a Variable",pts:5,
-    mission:"Create a variable called <strong>name</strong> and store your own name as a string value inside it. Then use <strong>print()</strong> to display it on the screen.",
-    reqs:["Create a variable called name","Assign your name as a string value (use quotes)","Use print() to display the variable"],
-    validate(c){
-      const lines=c.split('\n').map(l=>l.trim()).filter(Boolean);
-      if(lines.length===0) return{ok:false,msg:"⚠️ Write some code first."};
-      // check variable name = "something"
-      const hasVar=lines.some(l=>/^name\s*=\s*['"].+['"]/.test(l));
-      if(!hasVar) return{ok:false,msg:"⚠️ Write: name = \"Your Name\"  (put your name inside quotes and assign to a variable called name)"};
-      const hasPrint=lines.some(l=>/^print\s*\(\s*name\s*\)/.test(l)||/^print\s*\(\s*name\s*[,+]/.test(l));
-      if(!hasPrint) return{ok:false,msg:"⚠️ Use print(name) to display the variable on the screen."};
-      return{ok:true,msg:"✅ Correct! Variable created and printed successfully."};
-    }
-  },
-  {
-    id:'p2',title:"Task 2 — Addition",pts:5,
-    mission:"Create two variables called <strong>a</strong> and <strong>b</strong> and assign any two numbers to them. Then use the <strong>+</strong> operator to add them together and print the result.",
-    reqs:["Create variable a with a number","Create variable b with a number","Use + to add a and b","Print the result"],
-    validate(c){
-      if(c.trim().length<5) return{ok:false,msg:"⚠️ Write some code first."};
-      if(!/^\s*a\s*=\s*-?\d+/m.test(c)) return{ok:false,msg:"⚠️ Create a variable called a and assign a number to it. Example: a = 5"};
-      if(!/^\s*b\s*=\s*-?\d+/m.test(c)) return{ok:false,msg:"⚠️ Create a variable called b and assign a number to it. Example: b = 3"};
-      if(!/a\s*\+\s*b|b\s*\+\s*a/.test(c)) return{ok:false,msg:"⚠️ Use the + operator to add a and b together. Example: print(a + b)"};
-      if(!/print\s*\(/.test(c)) return{ok:false,msg:"⚠️ Use print() to display the result."};
-      return{ok:true,msg:"✅ Correct! Addition works perfectly."};
-    }
-  },
-  {
-    id:'p3',title:"Task 3 — Subtraction",pts:5,
-    mission:"Create two variables called <strong>x</strong> and <strong>y</strong> and assign any two numbers. Use the <strong>-</strong> operator to subtract <strong>y</strong> from <strong>x</strong> and print the result.",
-    reqs:["Create variable x with a number","Create variable y with a number","Use x - y to subtract","Print the result"],
-    validate(c){
-      if(c.trim().length<5) return{ok:false,msg:"⚠️ Write some code first."};
-      if(!/^\s*x\s*=\s*-?\d+/m.test(c)) return{ok:false,msg:"⚠️ Create a variable called x and assign a number. Example: x = 10"};
-      if(!/^\s*y\s*=\s*-?\d+/m.test(c)) return{ok:false,msg:"⚠️ Create a variable called y and assign a number. Example: y = 4"};
-      if(!/x\s*-\s*y/.test(c)) return{ok:false,msg:"⚠️ Use x - y to subtract. Example: print(x - y)"};
-      if(!/print\s*\(/.test(c)) return{ok:false,msg:"⚠️ Use print() to display the result."};
-      return{ok:true,msg:"✅ Correct! Subtraction works perfectly."};
-    }
-  },
-  {
-    id:'p4',title:"Task 4 — Multiplication & Division",pts:5,
-    mission:"Create two variables called <strong>p</strong> and <strong>q</strong> with any numbers. Print their <strong>product</strong> using <code>*</code> and print their <strong>quotient</strong> using <code>/</code>.",
-    reqs:["Create variable p with a number","Create variable q with a number","Print p * q (multiplication)","Print p / q (division)"],
-    validate(c){
-      if(c.trim().length<5) return{ok:false,msg:"⚠️ Write some code first."};
-      if(!/^\s*p\s*=\s*-?\d+/m.test(c)) return{ok:false,msg:"⚠️ Create variable p with a number. Example: p = 6"};
-      if(!/^\s*q\s*=\s*-?\d+/m.test(c)) return{ok:false,msg:"⚠️ Create variable q with a number. Example: q = 2"};
-      if(!/p\s*\*\s*q|q\s*\*\s*p/.test(c)) return{ok:false,msg:"⚠️ Use p * q to multiply. Example: print(p * q)"};
-      if(!/p\s*\/\s*q/.test(c)) return{ok:false,msg:"⚠️ Use p / q to divide. Example: print(p / q)"};
-      if((c.match(/print\s*\(/g)||[]).length<2) return{ok:false,msg:"⚠️ Use print() twice — once for multiplication and once for division."};
-      return{ok:true,msg:"✅ Correct! Multiplication and division both work."};
-    }
-  },
-  {
-    id:'p5',title:"Task 5 — IF Condition",pts:5,
-    mission:"Ask the user to enter a number using <strong>input()</strong>. Convert it to an integer. Write an <strong>if / else</strong> statement: if the number is greater than 10, print <em>\"Big number\"</em>, otherwise print <em>\"Small number\"</em>.",
-    reqs:["Use input() to get a number from the user","Convert it to an integer using int()","Write an if condition checking if number > 10","Add an else block","Print the correct message in each case"],
-    validate(c){
-      if(c.trim().length<10) return{ok:false,msg:"⚠️ Write some code first."};
-      if(!/input\s*\(/.test(c)) return{ok:false,msg:"⚠️ Use input() to get a number from the user. Example: num = int(input(\"Enter: \"))"};
-      if(!/int\s*\(\s*input/.test(c)) return{ok:false,msg:"⚠️ Wrap input() with int() to convert it to a number. Example: int(input(\"Enter: \"))"};
-      if(!/if\s+.+>\s*10|if\s+10\s*</.test(c)) return{ok:false,msg:"⚠️ Write an if condition: if number > 10:  (comparing to 10)"};
-      if(!/else\s*:/.test(c)) return{ok:false,msg:"⚠️ Add an else: block after your if block."};
-      if(!/print\s*\(/.test(c)) return{ok:false,msg:"⚠️ Use print() to display the message in both the if and else blocks."};
-      return{ok:true,msg:"✅ Correct! if/else condition works perfectly."};
-    }
-  },
-  {
-    id:'p6',title:"Task 6 — For Loop",pts:5,
-    mission:"Write a <strong>for loop</strong> that uses <code>range()</code> to print the numbers <strong>1, 2, 3, 4, 5</strong> — one per line. The loop must print exactly these five numbers.",
-    reqs:["Write a for loop","Use range() starting from 1 and ending at 5","Print each number inside the loop"],
-    validate(c){
-      if(c.trim().length<5) return{ok:false,msg:"⚠️ Write some code first."};
-      if(!/for\s+\w+\s+in\s+range/.test(c)) return{ok:false,msg:"⚠️ Write: for i in range(...):  using a for loop with range()"};
-      const m=c.match(/range\s*\(\s*(\d+)\s*(?:,\s*(\d+))?\s*\)/);
-      if(!m) return{ok:false,msg:"⚠️ Use range() inside your for loop. Example: range(1, 6) gives 1,2,3,4,5"};
-      const start=m[2]!==undefined?parseInt(m[1]):0;
-      const end=m[2]!==undefined?parseInt(m[2]):parseInt(m[1]);
-      if(start!==1||end!==6) return{ok:false,msg:`⚠️ Use range(1, 6) to print 1 to 5. You used range(${m[2]!==undefined?m[1]+', '+m[2]:m[1]}).`};
-      if(!/print\s*\(/.test(c)) return{ok:false,msg:"⚠️ Use print() inside the loop to display each number."};
-      return{ok:true,msg:"✅ Correct! For loop prints 1 to 5 perfectly."};
-    }
-  },
-  {
-    id:'p7',title:"Task 7 — List: append and remove",pts:10,
-    mission:"Create a list called <strong>colours</strong> with <strong>2 colour names</strong> in it. Use <strong>.append()</strong> to add a third colour. Then use <strong>.remove()</strong> to remove the first colour you added. Print the final list.",
-    reqs:["Create a list called colours with exactly 2 colour names","Use .append() to add a third colour","Use .remove() to remove one colour from the list","Print the final list"],
-    validate(c){
-      if(c.trim().length<10) return{ok:false,msg:"⚠️ Write some code first."};
-      if(!/\bcolours\s*=\s*\[/.test(c)) return{ok:false,msg:"⚠️ Create a list called colours using square brackets."};
-      const m=c.match(/colours\s*=\s*\[([^\]]*)\]/);
-      if(m){
-        const items=m[1].split(',').map(s=>s.trim().replace(/['"]/g,'')).filter(Boolean);
-        if(items.length<2) return{ok:false,msg:`⚠️ Your colours list has only ${items.length} item(s). Start with 2 colour names.`};
-      }
-      if(!/colours\s*\.append\s*\(/.test(c)) return{ok:false,msg:"⚠️ Use colours.append() to add a third colour to the list."};
-      if(!/colours\s*\.remove\s*\(/.test(c)) return{ok:false,msg:"⚠️ Use colours.remove() to remove a colour from the list."};
-      if(!/print\s*\(\s*colours\s*\)/.test(c)) return{ok:false,msg:"⚠️ Use print(colours) to display the final list."};
-      return{ok:true,msg:"✅ Excellent! List created, item appended, item removed, and printed correctly."};
-    }
-  },
-];
+document.addEventListener('contextmenu',e=>{
+  if(lockdownActive){ e.preventDefault(); copyPasteCount++; logViolation('right_click','Attempted right-click'); }
+});
+document.addEventListener('copy',e=>{
+  if(lockdownActive && curScreen==='s-quiz'){ e.preventDefault(); copyPasteCount++; logViolation('copy_blocked','Attempted to copy exam content'); }
+});
+document.addEventListener('paste',e=>{
+  if(lockdownActive && curScreen==='s-quiz'){ e.preventDefault(); copyPasteCount++; logViolation('paste_blocked','Attempted to paste content into the exam'); }
+});
+document.addEventListener('keydown',e=>{
+  if(!lockdownActive) return;
+  const k=e.key, ku=(k||'').toUpperCase();
+  const combo1=e.ctrlKey&&e.shiftKey&&['I','J','C','K'].includes(ku);
+  const combo2=e.metaKey&&e.altKey&&['I','J','C'].includes(ku);
+  const combo3=(e.ctrlKey||e.metaKey)&&['u','s'].includes((k||'').toLowerCase());
+  const f12=ku==='F12';
+  if(f12||combo1||combo2||combo3){
+    e.preventDefault(); e.stopPropagation();
+    blockedKeyCount++;
+    logViolation('blocked_shortcut','Attempted a blocked shortcut ('+(f12?'F12':ku)+')');
+  }
+});
+
+// Best-effort devtools-open heuristic (window geometry). Prone to false
+// positives on some setups, so it's logged as a flag for the teacher to
+// weigh, not used to fail the student automatically.
+let devtoolsSuspected=false;
+setInterval(()=>{
+  if(!lockdownActive) return;
+  const wDiff=window.outerWidth-window.innerWidth;
+  const hDiff=window.outerHeight-window.innerHeight;
+  const suspect=wDiff>170||hDiff>170;
+  if(suspect && !devtoolsSuspected){
+    devtoolsSuspected=true;
+    devtoolsFlagCount++;
+    logViolation('devtools_suspected','Browser window geometry suggests dev tools may be open');
+  } else if(!suspect){
+    devtoolsSuspected=false;
+  }
+},1500);
+
+function integrityReportHTML(){
+  const flagged = fsExitCount+tabSwitchCount+blockedKeyCount+devtoolsFlagCount+copyPasteCount > 0;
+  const awaySec=Math.round(totalAwayMs/1000);
+  const mm=String(Math.floor(awaySec/60)).padStart(2,'0');
+  const ss=String(awaySec%60).padStart(2,'0');
+  return `<div class="ib-title">${flagged?'⚠️ Exam Integrity Report — flags recorded':'✅ Exam Integrity Report — no issues detected'}</div>
+    <div class="ib-grid">
+      <div class="ib-row"><span>Fullscreen exits</span><b>${fsExitCount}</b></div>
+      <div class="ib-row"><span>Tab/window switches</span><b>${tabSwitchCount}</b></div>
+      <div class="ib-row"><span>Time away from exam</span><b>${mm}:${ss}</b></div>
+      <div class="ib-row"><span>Blocked shortcut attempts</span><b>${blockedKeyCount}</b></div>
+      <div class="ib-row"><span>Copy/paste/right-click attempts</span><b>${copyPasteCount}</b></div>
+      <div class="ib-row"><span>Possible dev-tools flags</span><b>${devtoolsFlagCount}</b></div>
+    </div>`;
+}
+
+// ═══════ DATA (encoded — answer key is not stored in plain text) ═══════
+// This exam file is emailed directly to students and opened locally, so the
+// question bank and answer key are obfuscated here to stop the most common
+// take-home cheat: opening this file in a text editor / "View Source" and
+// reading the answers straight out of the script. This is NOT bulletproof
+// against someone deliberately running the decode function in devtools --
+// see the teacher notes sent alongside this file for the full picture.
+function _xd(b64,key){
+  const bin=atob(b64);
+  const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i)^key.charCodeAt(i%key.length);
+  return new TextDecoder('utf-8').decode(bytes);
+}
+function _ld(b64,key){ return (0,eval)('('+_xd(b64,key)+')'); }
+const MCQ=_ld("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","pxK7qz");
+const TF=_ld("NQ1gQlVOTD8sEycNGh4tXVtUUhUtVxJKHgQrXQNcR0ptUBgQC0hiVx4HHhojSgRUAQM2QwIAThksEwMcC1YxUAURCxhsEVtWD1R4RwUBCwtuSFUFTExgclcCDwQrUhUYC1YsUhoRTh8sEycNGh4tXVcXDxhiQAMVHAJiRB4ABlYjExkBAxQnQVlUKBkwExIMDxsyXxJYTkohXBMRUEcsUhoRTktib1U1Ah8eEUtbDRkmVklUBwViRRYYBxJsEVtWD1R4VRYYHRNuERQbHAQnUANWVFQEUhsHC1ags+NUGBcwWhYWAhNiXRYZCwViUBYaABk2EwQADwQ2EwAdGh5iUlcaGxsgVgVaTiU2UgUATgErRx9UD1YuVgMACwRiWhkHGhMjV1lWE1o5EQZWVFQWWxJUUhUtVxJKBxgyRgNcR0ptUBgQC0hiVQIaDQIrXBlUDxo1Ug4HTgQnRwIGAAViUldIHQIwXBkTUAU2QR4aCUptQAMGARglDVtUCwAnXVcdCFY2WxJUGwUnQVcAFwYnQFcVThg3XhURHFhgH1UVTEw2QQIRE1o5EQZWVFQLXVckFwIqXBlYTg8tRlcBHRNiUlcHBxglXxJUUhUtVxJKU0ptUBgQC0hiQB4TAFY2XFdIHQIwXBkTUBcxQB4TAEptQAMGARglDVcVTgAjXwIRTgItExZUGBcwWhYWAhNsEVtWD1R4RwUBCwtuSFUFTExgcldIDRkmVkkSAhkjR0tbDRkmVklUHQItQRIHThdiXQIZDBMwEwAdGh5iUlcQCxUrXhYYTgYtWhkAQlYxRhQcThcxE0RaX0JiXAVUV1h7CllWQlQjEU0AHAMnTlsPTAdgCVU4BwU2Ex4aChM6WhkTTh8sEycNGh4tXVcHGhcwRwRUDwJiDwQAHBksVElFUlkxRwUbABF8HVcnAVY2WxJUCB8wQANUBwInXlcdHVYjR1cEAQUrRx4bAFZzHVVYTBdgCREVAgUnH1UXAQQwVhQATExgdRYYHRNi0ffgThorQANUBxgmVg8dABFiQAMVHAIxExYATkZsEyMcC1YkWgUHGlYrRxIZTh8xExYATh8sVxIMTkZsEQpYFVQzEU1WOh4nE0sXARInDREbHEptUBgQC0hiXxgbHlYhUhlUGwUnE0sXARInDQUVABEnG15IQRUtVxJKTgItEwURHhMjR1cXARInExZUCB86VhNUAAMvURIGThkkEwMdAxMxHVVYTBdgCQMGGxM/HwxWH1R4EUsXARInDQUVABEnG0JdUlkhXBMRUFYrXVcVThAtQVcYARkyEwAdAhpiQRIECxc2EwMcC1YuXBgETkNiRx4ZCwVuExAdGB8sVFcCDxo3VgRUXlpiAltUXFpiAFtUDxgmE0NaTFpgUlVOGgQ3VgpYFVQzEU1WJxhiYw4ABhksH1cNAQNiUBYaTgMxVldIDRkmVklaDwYyVhkQRl9+HBQbChN8EwMbThcmV1cVThgnRFcdGhMvEwMbTgIqVlcRABJiXBFUD1YuWgQAQFRuERZWVAIwRhIJQg1gQlVOTCIqVldIDRkmVkkYCxhqGktbDRkmVklUCAMsUAMdARhiWgRUGwUnV1cAAVYhXAIaGlYqXABUAxcsSlcdGhMvQFcVHBNiWhlUD1YuWgQAQFRuERZWVAIwRhIJMw==","nvB3wt");
+const DND=_ld("KRZlTQUEHghlA04gBxc9VQlQQ02lufhQIh8uVxhQE00gSwkVBgQpXk5cUAkiSg9SSE8TUQkDF01zGQAZHAg0GQMWUj0+TQQfHE0kVggVUgw0UkwWHR9nWEweEwAiGQ0eFk03SwUeBk0mGQsCFwgzUAIXXE0DSw0XUhkvXAFQGwMzVkwEGghnWgMCAAgkTUwfAAkiS0JSXk83TR9SSFx3FU4cGwMiSk5KKRZlTQkIBk99GxwCGwMzETBSOggrVQNcUjFlGUdQHAwqXEVSXk8oSwgVAE99CxFcCU8zXBQEUFdlVw0dF016GQUeAhgzETBSNwMzXB5QCwIyS0weEwAiA0wsUERlFU4fAAkiS05KQhBrQk4EFxUzG1ZSEwoiGVFQQ1tlFU4fAAkiS05KQxBrQk4EFxUzG1ZSAh8uVxhYLk8eVhlQEx8iZU5cUgwgXEBQLk8+XA0CAU0oVQgsUERlFU4fAAkiS05KQRAaREALUBkuTQAVUFdlaRkKCAEiGV5QkO3TGS8YFw4sGQ1QAQ4oSwlSXk8jXB8TUFdlbQQVAQhnDEwcGwMiSkwWHR8qGQ1QEQIqSQAVBghnUApfFwE0XEwAAAIgSw0dUhkvWBhQEQUiWgcDUgxnSg8fAAhpGSgCEwpnTQQVH00uVxgfUhkvXEwTHR81XA8EUgI1XQkCXE9rGxwEAU99CFxcUAEuVwkDUFccQk4EFxUzG1ZSFwE0XFZSXk8oSwgVAE99ChFcCU8zXBQEUFdlSg8fAAhnBEwZHBlvUAIABxlvZU41HBkiS0wDEQI1XFZQLk9uEE5cUAI1XQkCUFd3REALUBkiQRhSSE9nGUxQAh8uVxhYLk8eVhlQAgw0SgkUU00QXAAcUgkoVwlRLk9uG0BSHR8jXB5SSF86FRdSBgg/TU5KUAQhGR8THR8iGVJNUlh3A05cUAI1XQkCUFd2REALUBkiQRhSSE9nGUxQAh8uVxhYLk8MXAkAUhk1QAUeFUxnYAMFUg4mV0wUHU0uTU0sUERlFU4fAAkiS05KRhAaRDE=","rmG9lp");
+const PRAC=_ld("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","zcQ4hs");
 
 // ═══════ STATE ═══════
 let playerName='';
@@ -537,6 +528,8 @@ function beginQuiz(){
   if(!v){document.getElementById('nameErr').style.display='block';document.getElementById('nameIn').focus();return;}
   playerName=v;
   document.getElementById('nameErr').style.display='none';
+  lockdownActive=true;
+  requestExamFullscreen();
   showScreen('s-si1');
 }
 
@@ -714,6 +707,12 @@ function runPrac(id){
 // ═══════ SUBMIT ═══════
 function submitQuiz(){
   quizLive=false;
+  lockdownActive=false;
+  if(awayStart){ totalAwayMs+=Date.now()-awayStart; awayStart=null; }
+  if(isFullscreen()){
+    const exit=document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen||document.msExitFullscreen;
+    if(exit){ try{ exit.call(document).catch(()=>{}); }catch(e){} }
+  }
   let total=0;const log=[];
 
   MCQ.forEach((q,qi)=>{
@@ -763,6 +762,11 @@ function submitQuiz(){
   const bkS=[['MCQ','🧠 MCQ'],['True/False','✅ True/False'],['Drag & Drop','🧩 Drag & Drop'],['Practical','💻 Practical']];
   document.getElementById('rBreakdown').innerHTML=bkS.map(([s,l],i)=>
     `<div class="bk"><div class="bk-val" style="color:${bkC[i]}">${secT[s]}<span style="font-size:.68rem;color:var(--muted)">/${secM[s]}</span></div><div class="bk-lbl">${l}</div></div>`).join('');
+
+  const flaggedAny = fsExitCount+tabSwitchCount+blockedKeyCount+devtoolsFlagCount+copyPasteCount > 0;
+  const ib=document.getElementById('rIntegrity');
+  ib.className='integrity-box '+(flaggedAny?'flagged':'clean');
+  ib.innerHTML=integrityReportHTML();
 
   const rv=document.getElementById('rReview');
   rv.innerHTML='<div style="font-size:.9rem;font-weight:700;color:var(--gold);margin-bottom:.75rem">📋 Full Review</div>';
