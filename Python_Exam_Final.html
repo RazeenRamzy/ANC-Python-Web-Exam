@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐍 Python Exam — By Razeen Ramzy</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap');
+:root{--bg:#0B0F1A;--card:#141927;--border:#1E2A45;--coral:#FF4D6D;--gold:#FFD166;--teal:#06D6A0;--blue:#4CC9F0;--purple:#7B2FBE;--text:#E8EDF8;--muted:#6B7FA3;}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.star{position:absolute;border-radius:50%;background:#fff;animation:tw var(--d) infinite alternate}
+@keyframes tw{0%{opacity:.03}100%{opacity:.5}}
+.screen{display:none;position:relative;z-index:1;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1rem;animation:fadeIn .45s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+/* WELCOME */
+#s-welcome{text-align:center}
+.snake{font-size:5rem;display:block;animation:bob 2s ease-in-out infinite;margin-bottom:1rem}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.big-title{font-size:clamp(2rem,6vw,3.2rem);font-weight:800;line-height:1.1;margin-bottom:.35rem}
+.grad{background:linear-gradient(135deg,var(--gold),var(--coral),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.tagline{font-size:.9rem;color:var(--muted);margin-bottom:2rem}
+.struct-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.2rem;max-width:480px;width:100%;margin-bottom:1.5rem;text-align:left}
+.struct-lbl{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.8rem}
+.srow{display:flex;justify-content:space-between;align-items:center;padding:.42rem 0;border-bottom:1px solid var(--border);font-size:.84rem;gap:.5rem}
+.srow:last-child{border:none;font-weight:700;color:var(--gold);padding-top:.6rem}
+.sm{color:var(--gold);font-weight:700;flex-shrink:0}
+.name-box{max-width:480px;width:100%;margin-bottom:1.1rem;text-align:left}
+.name-box label{display:block;font-size:.73rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.45rem}
+.name-box input{width:100%;background:var(--card);border:2px solid var(--border);border-radius:10px;padding:.78rem 1.05rem;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:1rem;outline:none;transition:border .2s}
+.name-box input:focus{border-color:var(--teal)}
+.name-err{color:var(--coral);font-size:.76rem;margin-top:.4rem;display:none}
+.btn-begin{max-width:480px;width:100%;background:linear-gradient(135deg,var(--coral),#c23154);color:#fff;border:none;padding:.95rem;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;box-shadow:0 4px 22px rgba(255,77,109,.33);transition:all .2s;margin-bottom:.8rem}
+.btn-begin:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(255,77,109,.43)}
+.warn-note{font-size:.74rem;color:var(--muted);max-width:460px;text-align:center;line-height:1.7}
+.warn-note strong{color:var(--coral)}
+/* SECTION INTRO */
+.si-screen{text-align:center}
+.si-icon{font-size:4.5rem;display:block;animation:bob 2s ease-in-out infinite;margin-bottom:1.1rem}
+.si-title{font-size:1.9rem;font-weight:800;margin-bottom:.45rem}
+.si-sub{font-size:.88rem;color:var(--muted);max-width:400px;line-height:1.75;margin-bottom:.75rem}
+.si-mark{display:inline-block;background:rgba(255,209,102,.1);border:1px solid rgba(255,209,102,.25);border-radius:8px;padding:.32rem .95rem;font-size:.83rem;font-weight:700;color:var(--gold);margin-bottom:2rem}
+.btn-go{background:linear-gradient(135deg,var(--teal),#04a880);color:#000;border:none;padding:.88rem 2.6rem;border-radius:12px;font-size:.98rem;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;box-shadow:0 4px 16px rgba(6,214,160,.28);transition:all .2s}
+.btn-go:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(6,214,160,.38)}
+/* QUIZ */
+#s-quiz{justify-content:flex-start;padding:0}
+.hud{position:sticky;top:0;z-index:100;background:rgba(11,15,26,.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:.58rem 1rem}
+.hud-inner{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}
+.hud-snake{font-size:1.25rem}
+.hud-name{font-size:.73rem;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:.18rem .75rem;color:var(--muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hud-sec{font-size:.73rem;font-weight:700;color:var(--gold)}
+.hud-right{margin-left:auto;background:rgba(255,209,102,.07);border:1px solid rgba(255,209,102,.2);border-radius:20px;padding:.2rem .85rem;display:flex;align-items:center;gap:.3rem}
+.hud-pts{font-weight:800;color:var(--gold);font-size:.98rem;transition:transform .25s,color .25s}
+.hud-pts.pop{transform:scale(1.5);color:#fff}
+.hud-denom{font-size:.66rem;color:var(--muted)}
+.prog-strip{max-width:720px;margin:.4rem auto 0;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--blue));border-radius:2px;transition:width .5s ease;width:0%}
+.q-wrap{max-width:720px;width:100%;margin:0 auto;padding:1.4rem 1rem 3rem}
+.sec-div{display:flex;align-items:center;gap:.9rem;margin:2rem 0 1rem;padding:.9rem 1.1rem;background:var(--card);border:1px solid var(--border);border-radius:12px}
+.sec-div-icon{font-size:1.7rem;flex-shrink:0}
+.sd-name{font-size:.95rem;font-weight:700}
+.sd-desc{font-size:.72rem;color:var(--muted);margin-top:.12rem}
+.sec-div-pts{margin-left:auto;background:rgba(255,209,102,.08);border:1px solid rgba(255,209,102,.2);border-radius:7px;padding:.26rem .72rem;font-size:.8rem;font-weight:700;color:var(--gold);flex-shrink:0}
+/* QUESTION CARD */
+.q-card{background:var(--card);border:1.5px solid var(--border);border-radius:15px;padding:1.45rem;margin-bottom:.85rem;position:relative;overflow:hidden;transition:border-color .25s}
+.q-card::before{content:'';position:absolute;left:0;top:0;width:4px;height:100%;background:var(--qa,var(--teal));transition:background .3s}
+.q-card.answered{border-color:rgba(6,214,160,.28)}
+.q-card.answered::before{background:var(--teal)}
+.ans-badge{position:absolute;top:.8rem;right:.85rem;background:rgba(6,214,160,.12);border:1px solid rgba(6,214,160,.3);border-radius:6px;padding:.16rem .55rem;font-size:.66rem;font-weight:700;color:var(--teal);display:none;animation:popIn .22s ease}
+@keyframes popIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.q-num{font-size:.66rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem}
+.q-text{font-size:.95rem;font-weight:600;line-height:1.65;margin-bottom:1.05rem}
+.q-text code,.ic{font-family:'Fira Code',monospace;font-size:.84rem;background:rgba(6,214,160,.1);color:var(--teal);padding:.1rem .38rem;border-radius:4px}
+.code-snip{background:#070B14;border:1px solid var(--border);border-radius:9px;padding:.78rem 1.05rem;margin-bottom:.95rem;font-family:'Fira Code',monospace;font-size:.8rem;line-height:1.8;white-space:pre}
+.kw{color:#569CD6}.fn{color:#DCDCAA}.st{color:#CE9178}.cm{color:#6A9955}.nm{color:#B5CEA8}.vr{color:#9CDCFE}
+/* MCQ */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:.52rem}
+@media(max-width:500px){.opts{grid-template-columns:1fr}}
+.opt{display:flex;align-items:flex-start;gap:.68rem;background:rgba(30,42,69,.4);border:1.5px solid var(--border);border-radius:10px;padding:.72rem .88rem;cursor:pointer;font-size:.87rem;font-family:'Space Grotesk',sans-serif;color:var(--text);text-align:left;transition:all .14s;width:100%}
+.opt:hover{border-color:var(--blue);background:rgba(76,201,240,.05)}
+.opt.sel{border-color:var(--teal);background:rgba(6,214,160,.09)}
+.opt-key{width:23px;height:23px;flex-shrink:0;border-radius:5px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:.67rem;font-weight:700;color:var(--muted)}
+.opt.sel .opt-key{background:var(--teal);color:#000}
+/* T/F */
+.tf-row{display:flex;gap:.65rem}
+.tf-btn{flex:1;padding:.82rem;border-radius:10px;border:1.5px solid var(--border);background:rgba(30,42,69,.4);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:.93rem;font-weight:700;cursor:pointer;transition:all .14s}
+.tf-btn:hover{border-color:var(--teal)}
+.tf-btn.sel-t{border-color:var(--teal);background:rgba(6,214,160,.1);color:var(--teal)}
+.tf-btn.sel-f{border-color:var(--coral);background:rgba(255,77,109,.08);color:var(--coral)}
+/* DnD */
+.dnd-hint{font-size:.77rem;color:var(--muted);background:rgba(255,209,102,.06);border:1px solid rgba(255,209,102,.14);border-radius:8px;padding:.58rem .88rem;margin-bottom:.78rem;line-height:1.6}
+.dnd-list{display:flex;flex-direction:column;gap:.38rem}
+.dnd-item{display:flex;align-items:center;gap:.68rem;background:#0D1520;border:1.5px solid var(--border);border-radius:8px;padding:.58rem .9rem;cursor:grab;user-select:none;font-family:'Fira Code',monospace;font-size:.79rem;transition:border .14s}
+.dnd-item:active{cursor:grabbing}
+.dnd-item.dragging{opacity:.28}
+.dnd-item.over{border-color:var(--teal);background:rgba(6,214,160,.06)}
+.drag-handle{color:var(--muted);flex-shrink:0}
+.line-num{width:19px;height:19px;border-radius:4px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:.63rem;font-weight:700;color:var(--muted);flex-shrink:0;font-family:'Space Grotesk',sans-serif}
+.btn-lock{background:linear-gradient(135deg,var(--gold),#e0a200);color:#000;border:none;padding:.62rem 1.4rem;border-radius:9px;font-size:.83rem;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .18s;margin-top:.72rem;margin-right:.45rem}
+.btn-lock:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(255,209,102,.28)}
+.btn-lock:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-rst{background:var(--card);border:1.5px solid var(--border);color:var(--muted);padding:.62rem 1.05rem;border-radius:9px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;margin-top:.72rem;transition:border .14s}
+.btn-rst:hover{border-color:var(--muted)}
+.lock-msg{display:none;font-size:.73rem;color:var(--teal);margin-top:.48rem;font-weight:600}
+/* PRACTICAL */
+.prac-mission{background:#0D1520;border:1px solid var(--border);border-radius:10px;padding:.82rem 1rem;margin-bottom:.82rem;font-size:.84rem;line-height:1.75}
+.prac-mission strong{color:var(--gold)}
+.prac-reqs{margin-top:.48rem;padding-left:1.05rem;font-size:.77rem;color:var(--muted);line-height:1.95}
+.prac-reqs li{list-style:disc}
+.ed-shell{border-radius:10px;overflow:hidden;border:1.5px solid var(--border)}
+.ed-bar{background:#1a2030;padding:.4rem .88rem;display:flex;align-items:center;gap:.42rem;border-bottom:1px solid var(--border)}
+.ed-dot{width:9px;height:9px;border-radius:50%}
+.ed-file{font-size:.68rem;color:var(--muted);margin-left:.28rem;font-family:'Fira Code',monospace}
+.ed-ta{width:100%;min-height:115px;background:#070B14;color:#E8EDF8;font-family:'Fira Code',monospace;font-size:.86rem;line-height:1.85;padding:.82rem 1.05rem;border:none;outline:none;resize:vertical;tab-size:4}
+.ed-ta::placeholder{color:#2a3650}
+.run-row{display:flex;align-items:center;gap:.72rem;margin-top:.65rem;flex-wrap:wrap}
+.run-btn{background:linear-gradient(135deg,var(--teal),#04a880);color:#000;border:none;padding:.58rem 1.35rem;border-radius:9px;font-size:.83rem;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .17s}
+.run-btn:hover{transform:translateY(-2px);box-shadow:0 4px 11px rgba(6,214,160,.26)}
+.run-btn:disabled{opacity:.38;cursor:not-allowed;transform:none}
+.att-lbl{font-size:.7rem;color:var(--muted)}
+.out-box{margin-top:.62rem;background:#070B14;border:1px solid var(--border);border-radius:9px;padding:.72rem .98rem;font-family:'Fira Code',monospace;font-size:.78rem;line-height:1.7;display:none}
+.out-box.show{display:block}
+.out-err{color:var(--coral)}.out-ok{color:var(--teal)}
+/* SUBMIT */
+.submit-wrap{max-width:720px;width:100%;margin:0 auto;padding:0 1rem 3rem;text-align:center}
+.submit-note{background:rgba(255,77,109,.07);border:1px solid rgba(255,77,109,.2);border-radius:10px;padding:.82rem 1.05rem;font-size:.81rem;color:var(--coral);margin-bottom:1.05rem;line-height:1.6}
+.btn-submit{background:linear-gradient(135deg,var(--teal),#04a880);color:#000;border:none;padding:.98rem 3rem;border-radius:12px;font-size:1.03rem;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;box-shadow:0 4px 20px rgba(6,214,160,.3);transition:all .2s}
+.btn-submit:hover{transform:translateY(-3px);box-shadow:0 8px 26px rgba(6,214,160,.4)}
+/* RESULT */
+#s-result{justify-content:flex-start;padding:2.5rem 1rem}
+.res-inner{max-width:680px;width:100%;margin:0 auto}
+.res-top{text-align:center;margin-bottom:2rem}
+.ring-wrap{width:165px;height:165px;position:relative;margin:0 auto 1.2rem}
+.ring-wrap svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.ring-inner{position:relative;z-index:1;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-num{font-size:2.5rem;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--coral));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.ring-denom{font-size:.73rem;color:var(--muted)}
+.grade-badge{display:inline-block;padding:.32rem 1.25rem;border-radius:20px;font-size:1.25rem;font-weight:800;margin-bottom:.85rem}
+.gA{background:rgba(6,214,160,.15);color:var(--teal);border:1px solid var(--teal)}
+.gB{background:rgba(76,201,240,.15);color:var(--blue);border:1px solid var(--blue)}
+.gC{background:rgba(255,209,102,.15);color:var(--gold);border:1px solid var(--gold)}
+.gD{background:rgba(255,77,109,.15);color:var(--coral);border:1px solid var(--coral)}
+.motive{font-size:.94rem;line-height:1.85;max-width:500px;margin:0 auto 1.8rem}
+.breakdown{display:flex;gap:.55rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.8rem}
+.bk{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:.82rem 1.05rem;flex:1;min-width:95px;text-align:center}
+.bk-val{font-size:1.45rem;font-weight:800}
+.bk-lbl{font-size:.64rem;color:var(--muted);margin-top:.18rem;line-height:1.4}
+.rv-sec{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gold);margin:1.1rem 0 .5rem}
+.rv-item{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:.88rem 1.05rem;margin-bottom:.48rem;border-left:4px solid transparent}
+.rv-item.ok{border-left-color:var(--teal)}.rv-item.bad{border-left-color:var(--coral)}.rv-item.part{border-left-color:var(--gold)}
+.rv-top{display:flex;justify-content:space-between;margin-bottom:.28rem}
+.rv-num{font-size:.64rem;color:var(--muted);font-weight:600;text-transform:uppercase}
+.rv-tag{font-size:.64rem;padding:.1rem .46rem;border-radius:4px;font-weight:700}
+.rv-q{font-size:.81rem;font-weight:500;margin-bottom:.18rem}
+.rv-given{font-size:.74rem;color:var(--muted)}
+.rv-correct{font-size:.74rem;color:var(--teal);margin-top:.12rem}
+.rv-pts{font-size:.73rem;color:var(--gold);font-weight:700;margin-top:.18rem}
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px)}
+.overlay.show{display:flex}
+.modal{background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:2rem;max-width:370px;width:100%;text-align:center}
+.modal-ico{font-size:3rem;margin-bottom:.85rem}
+.modal-title{font-size:1.18rem;font-weight:700;margin-bottom:.55rem}
+.modal-body{font-size:.86rem;color:var(--muted);line-height:1.7;margin-bottom:1.35rem}
+.modal-body strong{color:var(--coral)}
+.modal-btn{background:linear-gradient(135deg,var(--teal),#04a880);color:#000;border:none;padding:.75rem 1.8rem;border-radius:10px;font-size:.93rem;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif}
+.fb-section{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:1.6rem;margin-top:2rem;text-align:left}
+.fb-title{font-size:1rem;font-weight:700;color:var(--gold);margin-bottom:.3rem}
+.fb-sub{font-size:.78rem;color:var(--muted);margin-bottom:1.2rem;line-height:1.6}
+.fb-label{display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.4rem;margin-top:.95rem}
+.fb-label:first-of-type{margin-top:0}
+.fb-stars{display:flex;gap:.4rem;margin-bottom:.15rem}
+.fb-star{font-size:1.6rem;cursor:pointer;transition:transform .15s;opacity:.35;background:none;border:none;padding:0;line-height:1}
+.fb-star.lit{opacity:1}
+.fb-star:hover{transform:scale(1.2)}
+.fb-ta{width:100%;background:#0D1520;border:1.5px solid var(--border);border-radius:9px;padding:.75rem 1rem;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:.86rem;line-height:1.7;outline:none;resize:vertical;min-height:80px;transition:border .2s;margin-top:.2rem}
+.fb-ta:focus{border-color:var(--teal)}
+.fb-ta::placeholder{color:#2a3650}
+.btn-fb-submit{margin-top:1.1rem;background:linear-gradient(135deg,var(--purple),#5a1a9e);color:#fff;border:none;padding:.75rem 2rem;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s;box-shadow:0 4px 14px rgba(123,47,190,.3)}
+.btn-fb-submit:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(123,47,190,.4)}
+.fb-done{display:none;margin-top:1rem;background:rgba(6,214,160,.1);border:1px solid rgba(6,214,160,.3);border-radius:9px;padding:.8rem 1rem;font-size:.85rem;color:var(--teal);font-weight:600}
+.cfbox{position:fixed;inset:0;pointer-events:none;z-index:8000;overflow:hidden}
+.cfp{position:absolute;top:-15px;border-radius:2px;animation:cfall linear forwards}
+@keyframes cfall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+
+<!-- WELCOME -->
+<div class="screen active" id="s-welcome">
+  <span class="snake">🐍</span>
+  <h1 class="big-title"><span class="grad">Python Exam</span></h1>
+  <p class="tagline">Interactive Quiz &nbsp;·&nbsp; By Razeen Ramzy</p>
+  <div class="struct-card">
+    <div class="struct-lbl">Exam Structure — 100 Marks</div>
+    <div class="srow"><span>🧠 Section 1 &nbsp; Multiple Choice (20 questions · 1 mark each)</span><span class="sm">20</span></div>
+    <div class="srow"><span>✅ Section 2 &nbsp; True or False (10 questions · 2 marks each)</span><span class="sm">20</span></div>
+    <div class="srow"><span>🧩 Section 3 &nbsp; Drag & Drop (2 puzzles · 10 marks each)</span><span class="sm">20</span></div>
+    <div class="srow"><span>💻 Section 4 &nbsp; Practical Coding (7 tasks)</span><span class="sm">40</span></div>
+    <div class="srow"><span>Total</span><span class="sm">100</span></div>
+  </div>
+  <div class="name-box">
+    <label>Your Full Name</label>
+    <input id="nameIn" type="text" placeholder="e.g. Azlaan…" maxlength="50" autocomplete="off" onkeydown="if(event.key==='Enter')beginQuiz()">
+    <div class="name-err" id="nameErr">⚠️ Please enter your name to begin.</div>
+  </div>
+  <button class="btn-begin" onclick="beginQuiz()">🚀 Start The Exam</button>
+  <p class="warn-note">⚠️ Once you begin, <strong>do not refresh or close</strong> this page — your answers will be lost.<br>Work through all four sections and click Submit at the very end.</p>
+</div>
+
+<!-- SECTION INTROS -->
+<div class="screen si-screen" id="s-si1">
+  <span class="si-icon">🧠</span>
+  <div class="si-title">Section 1 — Multiple Choice</div>
+  <div class="si-sub">20 questions. Choose the one correct answer for each. 1 mark per question. Read each question carefully before choosing.</div>
+  <div class="si-mark">20 marks total</div>
+  <button class="btn-go" onclick="goSection('sec1')">Start Section 1 →</button>
+</div>
+<div class="screen si-screen" id="s-si2">
+  <span class="si-icon">✅</span>
+  <div class="si-title">Section 2 — True or False</div>
+  <div class="si-sub">10 statements. Read each one carefully and decide whether it is True or False. 2 marks per question.</div>
+  <div class="si-mark">20 marks total</div>
+  <button class="btn-go" onclick="goSection('sec2')">Start Section 2 →</button>
+</div>
+<div class="screen si-screen" id="s-si3">
+  <span class="si-icon">🧩</span>
+  <div class="si-title">Section 3 — Drag & Drop</div>
+  <div class="si-sub">2 code puzzles. Each puzzle has Python code lines shuffled up. Drag them into the correct order, then click Lock Order. 10 marks each.</div>
+  <div class="si-mark">20 marks total</div>
+  <button class="btn-go" onclick="goSection('sec3')">Start Section 3 →</button>
+</div>
+<div class="screen si-screen" id="s-si4">
+  <span class="si-icon">💻</span>
+  <div class="si-title">Section 4 — Practical Coding</div>
+  <div class="si-sub">7 coding tasks. Type your own Python code for each task from scratch. No hints given — this tests what you have truly learned!</div>
+  <div class="si-mark">40 marks total</div>
+  <button class="btn-go" onclick="goSection('sec4')">Start Section 4 →</button>
+</div>
+
+<!-- QUIZ -->
+<div class="screen" id="s-quiz">
+  <div class="hud">
+    <div class="hud-inner">
+      <span class="hud-snake">🐍</span>
+      <span class="hud-name" id="hudName">—</span>
+      <span class="hud-sec" id="hudSec">—</span>
+      <div class="hud-right"><span class="hud-pts" id="hudPts">?</span><span class="hud-denom">&nbsp;/ 100</span></div>
+    </div>
+    <div class="prog-strip"><div class="prog-fill" id="progFill"></div></div>
+  </div>
+  <div class="q-wrap" id="qWrap">
+    <div class="sec-div" id="div-mcq"><span class="sec-div-icon">🧠</span><div><div class="sd-name">Section 1 — Multiple Choice</div><div class="sd-desc">20 questions · 1 mark each</div></div><div class="sec-div-pts">20 marks</div></div>
+    <div id="mcq-area"></div>
+    <div class="sec-div" id="div-tf"><span class="sec-div-icon">✅</span><div><div class="sd-name">Section 2 — True or False</div><div class="sd-desc">10 statements · 2 marks each</div></div><div class="sec-div-pts">20 marks</div></div>
+    <div id="tf-area"></div>
+    <div class="sec-div" id="div-dnd"><span class="sec-div-icon">🧩</span><div><div class="sd-name">Section 3 — Drag & Drop</div><div class="sd-desc">2 puzzles · 10 marks each</div></div><div class="sec-div-pts">20 marks</div></div>
+    <div id="dnd-area"></div>
+    <div class="sec-div" id="div-prac"><span class="sec-div-icon">💻</span><div><div class="sd-name">Section 4 — Practical Coding</div><div class="sd-desc">7 tasks · type code from scratch</div></div><div class="sec-div-pts">40 marks</div></div>
+    <div id="prac-area"></div>
+  </div>
+  <div class="submit-wrap" id="submitWrap" style="display:none">
+    <div class="submit-note">⚠️ Check all your answers before submitting. You cannot go back once you submit.</div>
+    <button class="btn-submit" onclick="submitQuiz()">✅ Submit & See My Results</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="s-result">
+  <div class="res-inner">
+    <div class="res-top">
+      <div style="font-size:.76rem;color:var(--muted);margin-bottom:.45rem">Exam Complete 🎉</div>
+      <div class="ring-wrap">
+        <svg viewBox="0 0 165 165">
+          <circle cx="82.5" cy="82.5" r="70" fill="none" stroke="#1E2A45" stroke-width="11"/>
+          <circle cx="82.5" cy="82.5" r="70" fill="none" stroke="url(#rg)" stroke-width="11" stroke-linecap="round" id="ringArc" stroke-dasharray="440" stroke-dashoffset="440"/>
+          <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#FFD166"/><stop offset="100%" stop-color="#FF4D6D"/></linearGradient></defs>
+        </svg>
+        <div class="ring-inner"><div class="ring-num" id="rScore">0</div><div class="ring-denom">out of 100</div></div>
+      </div>
+      <div class="grade-badge" id="rGrade"></div>
+      <p class="motive" id="rMotive"></p>
+      <div class="breakdown" id="rBreakdown"></div>
+    </div>
+    <div id="rReview"></div>
+    <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem">
+      <button style="background:var(--card);border:1.5px solid var(--border);color:var(--text);padding:.68rem 1.35rem;border-radius:9px;font-family:'Space Grotesk',sans-serif;font-size:.86rem;font-weight:600;cursor:pointer" onclick="window.print()">🖨️ Print Results</button>
+    </div>
+
+    <!-- FEEDBACK -->
+    <div class="fb-section">
+      <div class="fb-title">💬 Quick Feedback</div>
+      <div class="fb-sub">This is not part of your exam marks. Share your honest thoughts — it helps Mr. Razeen make the module better for everyone! Takes less than a minute.</div>
+
+      <span class="fb-label">How would you rate this module overall?</span>
+      <div class="fb-stars" id="fb-stars-module">
+        <button class="fb-star" data-g="module" data-v="1" onclick="rateStar('module',1)">⭐</button>
+        <button class="fb-star" data-g="module" data-v="2" onclick="rateStar('module',2)">⭐</button>
+        <button class="fb-star" data-g="module" data-v="3" onclick="rateStar('module',3)">⭐</button>
+        <button class="fb-star" data-g="module" data-v="4" onclick="rateStar('module',4)">⭐</button>
+        <button class="fb-star" data-g="module" data-v="5" onclick="rateStar('module',5)">⭐</button>
+      </div>
+
+      <span class="fb-label">How would you rate Mr. Razeen as your lecturer?</span>
+      <div class="fb-stars" id="fb-stars-lecturer">
+        <button class="fb-star" data-g="lecturer" data-v="1" onclick="rateStar('lecturer',1)">⭐</button>
+        <button class="fb-star" data-g="lecturer" data-v="2" onclick="rateStar('lecturer',2)">⭐</button>
+        <button class="fb-star" data-g="lecturer" data-v="3" onclick="rateStar('lecturer',3)">⭐</button>
+        <button class="fb-star" data-g="lecturer" data-v="4" onclick="rateStar('lecturer',4)">⭐</button>
+        <button class="fb-star" data-g="lecturer" data-v="5" onclick="rateStar('lecturer',5)">⭐</button>
+      </div>
+
+      <span class="fb-label">Any message for Mr. Razeen? (optional)</span>
+      <textarea class="fb-ta" id="fb-msg" placeholder="e.g. Thank you for making Python fun!…" style="min-height:60px"></textarea>
+
+      <button class="btn-fb-submit" onclick="submitFeedback()">📩 Submit Feedback</button>
+      <div class="fb-done" id="fb-done">✅ Thank you for your feedback, <span id="fb-done-name"></span>! Mr. Razeen really appreciates it. 🙏</div>
+    </div>
+  </div>
+</div>
+
+<!-- BLOCK MODAL -->
+<div class="overlay" id="blockModal">
+  <div class="modal">
+    <div class="modal-ico">🚨</div>
+    <div class="modal-title">Exam in Progress!</div>
+    <div class="modal-body">If you leave or refresh this page, your exam will be <strong>permanently lost</strong>.<br><br>Please stay on this page and complete your exam.</div>
+    <button class="modal-btn" onclick="document.getElementById('blockModal').classList.remove('show')">Go Back to Exam</button>
+  </div>
+</div>
+<div class="cfbox" id="cf"></div>
+
+<script>
+// STARS
+(()=>{const c=document.getElementById('stars');for(let i=0;i<80;i++){const s=document.createElement('div');s.className='star';const z=Math.random()*2+.8;s.style.cssText=`width:${z}px;height:${z}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*5}s;animation-delay:${Math.random()*5}s`;c.appendChild(s);}})();
+
+// BLOCK REFRESH
+let quizLive=false;
+window.addEventListener('beforeunload',e=>{if(!quizLive)return;e.preventDefault();e.returnValue='';document.getElementById('blockModal').classList.add('show');return '';});
+window.addEventListener('popstate',()=>{if(quizLive){history.pushState(null,'',location.href);document.getElementById('blockModal').classList.add('show');}});
+history.pushState(null,'',location.href);
+
+// SCREEN SWITCH
+let curScreen='s-welcome';
+function showScreen(id){
+  document.getElementById(curScreen).classList.remove('active');
+  curScreen=id;
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══════ DATA ═══════
+
+// MCQ × 20 = 20 marks
+// Removed: Q on == (assign), Q on # comment, Q on int(input)
+// Added 3 new simple basics + kept Python history 5
+const MCQ=[
+  // Python knowledge (5) — from advance slide
+  {q:"Who created the Python programming language?",o:["James Gosling","Guido van Rossum","Linus Torvalds","Dennis Ritchie"],a:1},
+  {q:"What was the <strong>first version</strong> of Python that was publicly released?",o:["Python 3.0","Python 2.0","Python 1.0","Python 0.5"],a:2},
+  {q:"Which of these is the <strong>current major version</strong> of Python widely used today?",o:["Python 1","Python 2","Python 3","Python 4"],a:2},
+  {q:"What is <strong>Jupyter Notebook</strong>?",o:["A type of Python variable only","An environment where you can write Python code","A Python game library to write code","A file format for storing Python code"],a:1},
+  {q:"Which of the following is also a <strong>programming language</strong>?",o:["Microsoft Word","Google Chrome","Java","Adobe Photoshop"],a:2},
+  // Python basics (15)
+  {q:"What is a <strong>variable</strong> in Python?",o:["A type of loop","A container that stores a value","A built-in function to store a value","A Python file name"],a:1},
+  {q:"Which line correctly stores the number <strong>10</strong> in a variable called <code>x</code>?",o:["10 = x","x == 10","x = 10","variable x = 10"],a:2},
+  {q:"What does <code>print(\"Hello\")</code> do?",o:["Saves the word to a file","Deletes the word","Displays Hello on the screen","Creates a variable called Hello"],a:2},
+  {q:"Which data type stores <strong>whole numbers</strong> like 5 or 100?",o:["float","string","bool","int"],a:3},
+  {q:"What data type is <code>\"Python\"</code>?",o:["int","float","string","bool"],a:2},
+  {q:"What does <code>input()</code> always return?",o:["An integer","A float","A string","A list"],a:2},
+  // 3 NEW simple replacements
+  {q:"Which symbol is used to <strong>assign</strong> a value to a variable in Python?",o:["==","=>","=","!="],a:2},
+  {q:"What is the correct way to create a <strong>list</strong> called <code>colours</code> with three items?",o:['colours = ("red","blue","green")',' colours = {"red","blue","green"}','colours = ["red","blue","green"]','colours = <"red","blue","green">'],a:2},
+  {q:"Which of these prints the <strong>first item</strong> from a list called <code>items</code>?",o:["print(items[1])","print(items[0])","print(items.first())","print(items(0))"],a:1},
+  // more basics
+  {q:"What does the <code>%</code> operator give you?",o:["The result of division","The remainder after division","The percentage","The square of a number"],a:1},
+  {q:"Which keyword is used to make a <strong>decision</strong> in Python?",o:["for","while","if","def"],a:2},
+  {q:"What is the output of this code?\n<div class='code-snip'><span class='kw'>for</span> i <span class='kw'>in</span> <span class='fn'>range</span>(<span class='nm'>3</span>):\n    <span class='fn'>print</span>(i)</div>",o:["1 2 3","0 1 2","3 3 3","0 1 2 3"],a:1},
+  {q:"What will this code print?\n<div class='code-snip'><span class='vr'>x</span> = <span class='nm'>8</span>\n<span class='kw'>if</span> x > <span class='nm'>5</span>:\n    <span class='fn'>print</span>(<span class='st'>\"Big\"</span>)\n<span class='kw'>else</span>:\n    <span class='fn'>print</span>(<span class='st'>\"Small\"</span>)</div>",o:["Small","Big","8","Nothing"],a:1},
+  {q:"Which of these correctly adds an item to the <strong>end</strong> of a list called <code>fruits</code>?",o:["fruits.add(\"mango\")","fruits.insert(\"mango\")","fruits.append(\"mango\")","fruits.push(\"mango\")"],a:2},
+  {q:"A <code>float</code> in Python is a number that:",o:["Has no decimal point","Has a decimal point like 3.14","Is always negative","Cannot be stored in a variable"],a:1},
+];
+
+// T/F × 10 = 20 marks
+// Removed: tuple, == assign question
+// All basics only — variables, print, input, operators, loops, lists
+const TF=[
+  {q:"In Python, <code>print()</code> displays output on the screen.",a:true},
+  {q:"A variable name in Python can start with a number. For example, <code>1name = \"Ali\"</code> is valid.",a:false,correct:"False — variable names cannot start with a number. Start with a letter instead."},
+  {q:"The <code>input()</code> function always returns a <strong>string</strong>, even if the user types a number.",a:true},
+  {q:"In Python, you use a single <code>=</code> sign to <strong>assign</strong> a value to a variable.",a:true},
+  {q:"A <code>float</code> stores a number with a decimal point, such as 3.14 or 9.99.",a:true},
+  {q:"List indexing in Python starts at <strong>1</strong>. So the first item is at position 1.",a:false,correct:"False — list indexing starts at 0. The first item is at index 0."},
+  {q:"The <code>for</code> loop can use <code>range()</code> to repeat code a fixed number of times.",a:true},
+  {q:"<code>range(5)</code> in a for loop will repeat the loop 5 times, giving values 0, 1, 2, 3, and 4.",a:true},
+  {q:"In Python, you can use <code>.append()</code> to add a new item to the end of a list.",a:true},
+  {q:"The <code>len()</code> function is used to count how many items are in a list.",a:true},
+];
+
+// DnD × 2 = 20 marks (10 each)
+const DND=[
+  {title:"Puzzle 1 — Print a greeting",desc:"These 4 lines of Python code ask for a name and print a greeting. Drag them into the correct order.",pts:10,
+   lines:[{text:`print("Hello, " + name)`,order:2},{text:`name = input("Enter your name: ")`,order:0},{text:`age = 16`,order:1},{text:`print("You are", age, "years old")`,order:3}]},
+  {title:"Puzzle 2 — Check a score",desc:"These 5 lines form a complete if/else program that checks a score. Drag them into the correct order.",pts:10,
+   lines:[{text:`else:`,order:3},{text:`score = int(input("Enter score: "))`,order:0},{text:`    print("You passed! Well done!")`,order:2},{text:`if score >= 50:`,order:1},{text:`    print("Keep trying! You can do it!")`,order:4}]},
+];
+
+// PRACTICAL × 7 = 40 marks
+// Tasks 1-6: 5 marks each = 30
+// Task 7 (list + loop): 10 marks = 10
+// Total = 40
+const PRAC=[
+  {
+    id:'p1',title:"Task 1 — Create a Variable",pts:5,
+    mission:"Create a variable called <strong>name</strong> and store your own name as a string value inside it. Then use <strong>print()</strong> to display it on the screen.",
+    reqs:["Create a variable called name","Assign your name as a string value (use quotes)","Use print() to display the variable"],
+    validate(c){
+      const lines=c.split('\n').map(l=>l.trim()).filter(Boolean);
+      if(lines.length===0) return{ok:false,msg:"⚠️ Write some code first."};
+      // check variable name = "something"
+      const hasVar=lines.some(l=>/^name\s*=\s*['"].+['"]/.test(l));
+      if(!hasVar) return{ok:false,msg:"⚠️ Write: name = \"Your Name\"  (put your name inside quotes and assign to a variable called name)"};
+      const hasPrint=lines.some(l=>/^print\s*\(\s*name\s*\)/.test(l)||/^print\s*\(\s*name\s*[,+]/.test(l));
+      if(!hasPrint) return{ok:false,msg:"⚠️ Use print(name) to display the variable on the screen."};
+      return{ok:true,msg:"✅ Correct! Variable created and printed successfully."};
+    }
+  },
+  {
+    id:'p2',title:"Task 2 — Addition",pts:5,
+    mission:"Create two variables called <strong>a</strong> and <strong>b</strong> and assign any two numbers to them. Then use the <strong>+</strong> operator to add them together and print the result.",
+    reqs:["Create variable a with a number","Create variable b with a number","Use + to add a and b","Print the result"],
+    validate(c){
+      if(c.trim().length<5) return{ok:false,msg:"⚠️ Write some code first."};
+      if(!/^\s*a\s*=\s*-?\d+/m.test(c)) return{ok:false,msg:"⚠️ Create a variable called a and assign a number to it. Example: a = 5"};
+      if(!/^\s*b\s*=\s*-?\d+/m.test(c)) return{ok:false,msg:"⚠️ Create a variable called b and assign a number to it. Example: b = 3"};
+      if(!/a\s*\+\s*b|b\s*\+\s*a/.test(c)) return{ok:false,msg:"⚠️ Use the + operator to add a and b together. Example: print(a + b)"};
+      if(!/print\s*\(/.test(c)) return{ok:false,msg:"⚠️ Use print() to display the result."};
+      return{ok:true,msg:"✅ Correct! Addition works perfectly."};
+    }
+  },
+  {
+    id:'p3',title:"Task 3 — Subtraction",pts:5,
+    mission:"Create two variables called <strong>x</strong> and <strong>y</strong> and assign any two numbers. Use the <strong>-</strong> operator to subtract <strong>y</strong> from <strong>x</strong> and print the result.",
+    reqs:["Create variable x with a number","Create variable y with a number","Use x - y to subtract","Print the result"],
+    validate(c){
+      if(c.trim().length<5) return{ok:false,msg:"⚠️ Write some code first."};
+      if(!/^\s*x\s*=\s*-?\d+/m.test(c)) return{ok:false,msg:"⚠️ Create a variable called x and assign a number. Example: x = 10"};
+      if(!/^\s*y\s*=\s*-?\d+/m.test(c)) return{ok:false,msg:"⚠️ Create a variable called y and assign a number. Example: y = 4"};
+      if(!/x\s*-\s*y/.test(c)) return{ok:false,msg:"⚠️ Use x - y to subtract. Example: print(x - y)"};
+      if(!/print\s*\(/.test(c)) return{ok:false,msg:"⚠️ Use print() to display the result."};
+      return{ok:true,msg:"✅ Correct! Subtraction works perfectly."};
+    }
+  },
+  {
+    id:'p4',title:"Task 4 — Multiplication & Division",pts:5,
+    mission:"Create two variables called <strong>p</strong> and <strong>q</strong> with any numbers. Print their <strong>product</strong> using <code>*</code> and print their <strong>quotient</strong> using <code>/</code>.",
+    reqs:["Create variable p with a number","Create variable q with a number","Print p * q (multiplication)","Print p / q (division)"],
+    validate(c){
+      if(c.trim().length<5) return{ok:false,msg:"⚠️ Write some code first."};
+      if(!/^\s*p\s*=\s*-?\d+/m.test(c)) return{ok:false,msg:"⚠️ Create variable p with a number. Example: p = 6"};
+      if(!/^\s*q\s*=\s*-?\d+/m.test(c)) return{ok:false,msg:"⚠️ Create variable q with a number. Example: q = 2"};
+      if(!/p\s*\*\s*q|q\s*\*\s*p/.test(c)) return{ok:false,msg:"⚠️ Use p * q to multiply. Example: print(p * q)"};
+      if(!/p\s*\/\s*q/.test(c)) return{ok:false,msg:"⚠️ Use p / q to divide. Example: print(p / q)"};
+      if((c.match(/print\s*\(/g)||[]).length<2) return{ok:false,msg:"⚠️ Use print() twice — once for multiplication and once for division."};
+      return{ok:true,msg:"✅ Correct! Multiplication and division both work."};
+    }
+  },
+  {
+    id:'p5',title:"Task 5 — IF Condition",pts:5,
+    mission:"Ask the user to enter a number using <strong>input()</strong>. Convert it to an integer. Write an <strong>if / else</strong> statement: if the number is greater than 10, print <em>\"Big number\"</em>, otherwise print <em>\"Small number\"</em>.",
+    reqs:["Use input() to get a number from the user","Convert it to an integer using int()","Write an if condition checking if number > 10","Add an else block","Print the correct message in each case"],
+    validate(c){
+      if(c.trim().length<10) return{ok:false,msg:"⚠️ Write some code first."};
+      if(!/input\s*\(/.test(c)) return{ok:false,msg:"⚠️ Use input() to get a number from the user. Example: num = int(input(\"Enter: \"))"};
+      if(!/int\s*\(\s*input/.test(c)) return{ok:false,msg:"⚠️ Wrap input() with int() to convert it to a number. Example: int(input(\"Enter: \"))"};
+      if(!/if\s+.+>\s*10|if\s+10\s*</.test(c)) return{ok:false,msg:"⚠️ Write an if condition: if number > 10:  (comparing to 10)"};
+      if(!/else\s*:/.test(c)) return{ok:false,msg:"⚠️ Add an else: block after your if block."};
+      if(!/print\s*\(/.test(c)) return{ok:false,msg:"⚠️ Use print() to display the message in both the if and else blocks."};
+      return{ok:true,msg:"✅ Correct! if/else condition works perfectly."};
+    }
+  },
+  {
+    id:'p6',title:"Task 6 — For Loop",pts:5,
+    mission:"Write a <strong>for loop</strong> that uses <code>range()</code> to print the numbers <strong>1, 2, 3, 4, 5</strong> — one per line. The loop must print exactly these five numbers.",
+    reqs:["Write a for loop","Use range() starting from 1 and ending at 5","Print each number inside the loop"],
+    validate(c){
+      if(c.trim().length<5) return{ok:false,msg:"⚠️ Write some code first."};
+      if(!/for\s+\w+\s+in\s+range/.test(c)) return{ok:false,msg:"⚠️ Write: for i in range(...):  using a for loop with range()"};
+      const m=c.match(/range\s*\(\s*(\d+)\s*(?:,\s*(\d+))?\s*\)/);
+      if(!m) return{ok:false,msg:"⚠️ Use range() inside your for loop. Example: range(1, 6) gives 1,2,3,4,5"};
+      const start=m[2]!==undefined?parseInt(m[1]):0;
+      const end=m[2]!==undefined?parseInt(m[2]):parseInt(m[1]);
+      if(start!==1||end!==6) return{ok:false,msg:`⚠️ Use range(1, 6) to print 1 to 5. You used range(${m[2]!==undefined?m[1]+', '+m[2]:m[1]}).`};
+      if(!/print\s*\(/.test(c)) return{ok:false,msg:"⚠️ Use print() inside the loop to display each number."};
+      return{ok:true,msg:"✅ Correct! For loop prints 1 to 5 perfectly."};
+    }
+  },
+  {
+    id:'p7',title:"Task 7 — List: append and remove",pts:10,
+    mission:"Create a list called <strong>colours</strong> with <strong>2 colour names</strong> in it. Use <strong>.append()</strong> to add a third colour. Then use <strong>.remove()</strong> to remove the first colour you added. Print the final list.",
+    reqs:["Create a list called colours with exactly 2 colour names","Use .append() to add a third colour","Use .remove() to remove one colour from the list","Print the final list"],
+    validate(c){
+      if(c.trim().length<10) return{ok:false,msg:"⚠️ Write some code first."};
+      if(!/\bcolours\s*=\s*\[/.test(c)) return{ok:false,msg:"⚠️ Create a list called colours using square brackets."};
+      const m=c.match(/colours\s*=\s*\[([^\]]*)\]/);
+      if(m){
+        const items=m[1].split(',').map(s=>s.trim().replace(/['"]/g,'')).filter(Boolean);
+        if(items.length<2) return{ok:false,msg:`⚠️ Your colours list has only ${items.length} item(s). Start with 2 colour names.`};
+      }
+      if(!/colours\s*\.append\s*\(/.test(c)) return{ok:false,msg:"⚠️ Use colours.append() to add a third colour to the list."};
+      if(!/colours\s*\.remove\s*\(/.test(c)) return{ok:false,msg:"⚠️ Use colours.remove() to remove a colour from the list."};
+      if(!/print\s*\(\s*colours\s*\)/.test(c)) return{ok:false,msg:"⚠️ Use print(colours) to display the final list."};
+      return{ok:true,msg:"✅ Excellent! List created, item appended, item removed, and printed correctly."};
+    }
+  },
+];
+
+// ═══════ STATE ═══════
+let playerName='';
+let answeredMCQ={};
+let answeredTF={};
+let dndOrder={};
+let dndLocked={};
+let pracSolved={};   // id -> pts earned (0 or full)
+let pracAttempts={}; // id -> count
+let dndSrc=null;
+const MAX_ATT=4;
+const TOTAL_ANS=MCQ.length+TF.length+DND.length+PRAC.length; // 20+10+2+7=39
+
+// ═══════ BEGIN ═══════
+function beginQuiz(){
+  const v=document.getElementById('nameIn').value.trim();
+  if(!v){document.getElementById('nameErr').style.display='block';document.getElementById('nameIn').focus();return;}
+  playerName=v;
+  document.getElementById('nameErr').style.display='none';
+  showScreen('s-si1');
+}
+
+let quizBuilt=false;
+function goSection(sec){
+  if(!quizBuilt){
+    quizLive=true;
+    document.getElementById('hudName').textContent=playerName;
+    buildAll();
+    quizBuilt=true;
+  }
+  showScreen('s-quiz');
+  const targets={sec1:'div-mcq',sec2:'div-tf',sec3:'div-dnd',sec4:'div-prac'};
+  const secLabels={sec1:'🧠 Section 1 — MCQ',sec2:'✅ Section 2 — True/False',sec3:'🧩 Section 3 — Drag & Drop',sec4:'💻 Section 4 — Practical'};
+  document.getElementById('hudSec').textContent=secLabels[sec]||'';
+  const t=document.getElementById(targets[sec]);
+  if(t) setTimeout(()=>t.scrollIntoView({behavior:'smooth',block:'start'}),300);
+}
+
+// ═══════ BUILD ALL ═══════
+function buildAll(){buildMCQ();buildTF();buildDND();buildPrac();document.getElementById('submitWrap').style.display='block';}
+
+// ═══════ PROGRESS ═══════
+function updateProg(){
+  let done=Object.keys(answeredMCQ).length+Object.keys(answeredTF).length+Object.values(dndLocked).filter(Boolean).length+Object.keys(pracSolved).length;
+  document.getElementById('progFill').style.width=Math.min(100,Math.round(done/TOTAL_ANS*100))+'%';
+}
+function markCard(id){
+  const card=document.getElementById(id);if(!card)return;
+  card.classList.add('answered');
+  const b=card.querySelector('.ans-badge');if(b)b.style.display='block';
+}
+
+// ═══════ MCQ ═══════
+function buildMCQ(){
+  const area=document.getElementById('mcq-area');
+  const keys=['A','B','C','D'];
+  MCQ.forEach((q,qi)=>{
+    const card=document.createElement('div');card.className='q-card';card.id='mcq-card-'+qi;card.style.setProperty('--qa','var(--blue)');
+    let opts='';q.o.forEach((o,oi)=>opts+=`<button class="opt" id="mcq-${qi}-${oi}" onclick="pickMCQ(${qi},${oi})"><span class="opt-key">${keys[oi]}</span>${o}</button>`);
+    card.innerHTML=`<div class="ans-badge">Answered ✓</div><div class="q-num">Question ${qi+1} of ${MCQ.length} · 1 mark</div><div class="q-text">${q.q}</div><div class="opts">${opts}</div>`;
+    area.appendChild(card);
+  });
+}
+function pickMCQ(qi,oi){
+  MCQ[qi].o.forEach((_,i)=>document.getElementById(`mcq-${qi}-${i}`).classList.remove('sel'));
+  document.getElementById(`mcq-${qi}-${oi}`).classList.add('sel');
+  answeredMCQ[qi]=oi;markCard('mcq-card-'+qi);updateProg();
+}
+
+// ═══════ T/F ═══════
+function buildTF(){
+  const area=document.getElementById('tf-area');
+  TF.forEach((q,qi)=>{
+    const card=document.createElement('div');card.className='q-card';card.id='tf-card-'+qi;card.style.setProperty('--qa','var(--teal)');
+    card.innerHTML=`<div class="ans-badge">Answered ✓</div><div class="q-num">Statement ${qi+1} of ${TF.length} · 2 marks</div><div class="q-text">${q.q}</div>
+      <div class="tf-row">
+        <button class="tf-btn" id="tf-${qi}-t" onclick="pickTF(${qi},true)">✅ True</button>
+        <button class="tf-btn" id="tf-${qi}-f" onclick="pickTF(${qi},false)">❌ False</button>
+      </div>`;
+    area.appendChild(card);
+  });
+}
+function pickTF(qi,val){
+  document.getElementById(`tf-${qi}-t`).className='tf-btn'+(val?' sel-t':'');
+  document.getElementById(`tf-${qi}-f`).className='tf-btn'+(!val?' sel-f':'');
+  answeredTF[qi]=val;markCard('tf-card-'+qi);updateProg();
+}
+
+// ═══════ DnD ═══════
+function buildDND(){
+  const area=document.getElementById('dnd-area');
+  DND.forEach((puz,pi)=>{
+    dndOrder[pi]=[...puz.lines.keys()].sort(()=>Math.random()-.5);
+    dndLocked[pi]=false;
+    const card=document.createElement('div');card.className='q-card';card.id='dnd-card-'+pi;card.style.setProperty('--qa','var(--gold)');
+    card.innerHTML=`<div class="ans-badge">Answered ✓</div>
+      <div class="q-num">Puzzle ${pi+1} of ${DND.length} · ${puz.pts} marks</div>
+      <div class="q-text">${puz.title}</div>
+      <div class="dnd-hint">📋 ${puz.desc}<br>🖱️ <strong>Drag lines</strong> up or down to change their order. When ready, click <strong>Lock Order</strong>.</div>
+      <div class="dnd-list" id="dnd-list-${pi}"></div>
+      <div><button class="btn-lock" id="dnd-lock-${pi}" onclick="lockDND(${pi})">🔒 Lock Order</button><button class="btn-rst" id="dnd-rst-${pi}" onclick="resetDND(${pi})">↩ Reset</button></div>
+      <div class="lock-msg" id="dnd-lmsg-${pi}">✅ Order locked and saved!</div>`;
+    area.appendChild(card);renderDNDList(pi);
+  });
+}
+function renderDNDList(pi){
+  const list=document.getElementById('dnd-list-'+pi);list.innerHTML='';
+  dndOrder[pi].forEach((li,pos)=>{
+    const item=document.createElement('div');item.className='dnd-item';item.draggable=!dndLocked[pi];item.dataset.pos=pos;
+    item.innerHTML=`<span class="drag-handle">⠿</span><span class="line-num">${pos+1}</span><span>${esc(DND[pi].lines[li].text)}</span>`;
+    if(!dndLocked[pi]){
+      item.addEventListener('dragstart',e=>{dndSrc=item;item.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+      item.addEventListener('dragend',()=>{item.classList.remove('dragging');list.querySelectorAll('.dnd-item').forEach(i=>i.classList.remove('over'));});
+      item.addEventListener('dragover',e=>{e.preventDefault();item.classList.add('over');});
+      item.addEventListener('dragleave',()=>item.classList.remove('over'));
+      item.addEventListener('drop',e=>{
+        e.preventDefault();
+        if(dndSrc&&dndSrc!==item){
+          const fp=parseInt(dndSrc.dataset.pos),tp=parseInt(item.dataset.pos);
+          const tmp=dndOrder[pi][fp];dndOrder[pi][fp]=dndOrder[pi][tp];dndOrder[pi][tp]=tmp;
+          renderDNDList(pi);
+        }
+      });
+    }
+    list.appendChild(item);
+  });
+}
+function lockDND(pi){
+  dndLocked[pi]=true;
+  document.getElementById('dnd-lock-'+pi).disabled=true;
+  document.getElementById('dnd-rst-'+pi).disabled=true;
+  document.getElementById('dnd-lmsg-'+pi).style.display='block';
+  renderDNDList(pi);markCard('dnd-card-'+pi);updateProg();
+}
+function resetDND(pi){if(!dndLocked[pi]){dndOrder[pi]=[...dndOrder[pi]].sort(()=>Math.random()-.5);renderDNDList(pi);}}
+
+// ═══════ PRACTICAL ═══════
+function buildPrac(){
+  const area=document.getElementById('prac-area');
+  PRAC.forEach((task,ti)=>{
+    pracAttempts[task.id]=0;pracSolved[task.id]=undefined;
+    const reqs=task.reqs.map(r=>`<li>${r}</li>`).join('');
+    const card=document.createElement('div');card.className='q-card';card.id='prac-card-'+task.id;card.style.setProperty('--qa','var(--coral)');
+    card.innerHTML=`<div class="ans-badge">Answered ✓</div>
+      <div class="q-num">Task ${ti+1} of ${PRAC.length} · ${task.pts} marks</div>
+      <div class="q-text">${task.title}</div>
+      <div class="prac-mission">${task.mission}<ul class="prac-reqs">${reqs}</ul></div>
+      <div class="ed-shell">
+        <div class="ed-bar">
+          <div class="ed-dot" style="background:#FF5F57"></div>
+          <div class="ed-dot" style="background:#FFBD2E"></div>
+          <div class="ed-dot" style="background:#28C840"></div>
+          <span class="ed-file">task${ti+1}.py</span>
+        </div>
+        <textarea class="ed-ta" id="ta-${task.id}" placeholder="" spellcheck="false"></textarea>
+      </div>
+      <div class="run-row">
+        <button class="run-btn" id="run-${task.id}" onclick="runPrac('${task.id}')">▶ Check Code</button>
+        <span class="att-lbl" id="att-${task.id}">You have ${MAX_ATT} attempts</span>
+      </div>
+      <div class="out-box" id="out-${task.id}"></div>`;
+    area.appendChild(card);
+  });
+}
+function runPrac(id){
+  const task=PRAC.find(t=>t.id===id);
+  if(pracSolved[id]===task.pts) return; // already solved
+  pracAttempts[id]++;
+  const rem=MAX_ATT-pracAttempts[id];
+  const code=document.getElementById('ta-'+id).value;
+  const result=task.validate(code);
+  const ob=document.getElementById('out-'+id);ob.className='out-box show';
+  const attEl=document.getElementById('att-'+id);
+  if(result.ok){
+    ob.innerHTML=`<span class="out-ok">${result.msg}  +${task.pts} marks</span>`;
+    pracSolved[id]=task.pts;
+    document.getElementById('run-'+id).disabled=true;
+    document.getElementById('ta-'+id).readOnly=true;
+    attEl.textContent='';
+    markCard('prac-card-'+id);updateProg();
+  } else {
+    ob.innerHTML=`<span class="out-err">${result.msg}</span>`;
+    if(rem<=0){
+      attEl.textContent='No more attempts for this task.';
+      document.getElementById('run-'+id).disabled=true;
+      if(pracSolved[id]===undefined) pracSolved[id]=0;
+      markCard('prac-card-'+id);updateProg();
+    } else {
+      attEl.textContent=`${rem} attempt${rem!==1?'s':''} remaining`;
+    }
+  }
+}
+
+// ═══════ SUBMIT ═══════
+function submitQuiz(){
+  quizLive=false;
+  let total=0;const log=[];
+
+  MCQ.forEach((q,qi)=>{
+    const given=answeredMCQ[qi];const ok=given===q.a;const earned=ok?1:0;total+=earned;
+    log.push({sec:'MCQ',lbl:`Q${qi+1}`,earned,max:1,status:ok?'ok':'bad',qt:striptags(q.q),given:given!==undefined?q.o[given]:'(not answered)',correct:q.o[q.a]});
+  });
+  TF.forEach((q,qi)=>{
+    const given=answeredTF[qi];const ok=given!==undefined&&given===q.a;const earned=ok?2:0;total+=earned;
+    log.push({sec:'True/False',lbl:`Statement ${qi+1}`,earned,max:2,status:ok?'ok':'bad',qt:striptags(q.q),given:given===undefined?'(not answered)':given?'True':'False',correct:q.correct||(q.a?'True':'False')});
+  });
+  DND.forEach((puz,pi)=>{
+    const order=dndOrder[pi];let correct=0;
+    order.forEach((li,pos)=>{if(puz.lines[li].order===pos)correct++;});
+    const locked=dndLocked[pi];const pct=locked?correct/puz.lines.length:0;
+    const earned=pct===1?puz.pts:pct>=0.6?Math.round(puz.pts*.6):pct>0?Math.round(puz.pts*.25):0;
+    total+=earned;
+    const co=puz.lines.slice().sort((a,b)=>a.order-b.order).map(l=>l.text).join(' → ');
+    log.push({sec:'Drag & Drop',lbl:`Puzzle ${pi+1}`,earned,max:puz.pts,status:pct===1?'ok':earned>0?'part':'bad',qt:puz.title,given:locked?`${correct}/${puz.lines.length} lines correct`:'(not locked)',correct:co});
+  });
+  PRAC.forEach((task,ti)=>{
+    const earned=pracSolved[task.id]||0;total+=earned;
+    log.push({sec:'Practical',lbl:`Task ${ti+1}`,earned,max:task.pts,status:earned===task.pts?'ok':'bad',qt:task.title,given:earned?'Solved correctly':'Not solved / incorrect',correct:''});
+  });
+
+  showScreen('s-result');
+  setTimeout(()=>{
+    const arc=document.getElementById('ringArc');
+    arc.style.transition='stroke-dashoffset 1.6s ease';
+    arc.style.strokeDashoffset=440-(440*total/100);
+    animNum(document.getElementById('rScore'),0,total,1600);
+  },350);
+
+  let grade,cls,msg;
+  if(total>=85){grade='A+ 🌟';cls='gA';msg=`🎉 <strong>Brilliant, ${playerName}!</strong><br>You scored ${total} out of 100 — an outstanding result! You showed excellent understanding of Python across every section, including writing real code from scratch. Mr. Razeen is very proud of you. Keep this up and you will be building real programs very soon! 🚀`;}
+  else if(total>=70){grade='A 🏆';cls='gA';msg=`🌟 <strong>Excellent, ${playerName}!</strong><br>You scored ${total} out of 100. You performed very well across all sections. Review the questions you got wrong, keep practising your coding, and you will reach the top! 💪`;}
+  else if(total>=55){grade='B 👍';cls='gB';msg=`✨ <strong>Good effort, ${playerName}!</strong><br>You scored ${total} out of 100. You have a solid understanding of Python basics. Look at where you lost marks, go back to your notes, and keep typing code every day. You are on the right track! 🎯`;}
+  else if(total>=40){grade='C 📖';cls='gC';msg=`💡 <strong>Keep going, ${playerName}!</strong><br>You scored ${total} out of 100. Python takes time and practice. Go back to your slides, try the code examples again, and practise a little every single day. You will improve quickly! 🌱`;}
+  else{grade='D 🌱';cls='gD';msg=`💪 <strong>Don't stop, ${playerName}!</strong><br>You scored ${total} out of 100. This Exam showed exactly where to focus your learning — that is really valuable! Go back to your notes, practise writing small programs every day, and remember: every great programmer started exactly where you are now. We believe in you! 🐍`;}
+
+  document.getElementById('rGrade').textContent=grade;document.getElementById('rGrade').className='grade-badge '+cls;
+  document.getElementById('rMotive').innerHTML=msg;
+
+  const secT={MCQ:0,'True/False':0,'Drag & Drop':0,Practical:0};
+  const secM={MCQ:20,'True/False':20,'Drag & Drop':20,Practical:40};
+  log.forEach(r=>{if(secT[r.sec]!==undefined)secT[r.sec]+=r.earned;});
+  const bkC=['var(--blue)','var(--teal)','var(--gold)','var(--coral)'];
+  const bkS=[['MCQ','🧠 MCQ'],['True/False','✅ True/False'],['Drag & Drop','🧩 Drag & Drop'],['Practical','💻 Practical']];
+  document.getElementById('rBreakdown').innerHTML=bkS.map(([s,l],i)=>
+    `<div class="bk"><div class="bk-val" style="color:${bkC[i]}">${secT[s]}<span style="font-size:.68rem;color:var(--muted)">/${secM[s]}</span></div><div class="bk-lbl">${l}</div></div>`).join('');
+
+  const rv=document.getElementById('rReview');
+  rv.innerHTML='<div style="font-size:.9rem;font-weight:700;color:var(--gold);margin-bottom:.75rem">📋 Full Review</div>';
+  const secLabels={MCQ:'🧠 Section 1 — MCQ','True/False':'✅ Section 2 — True or False','Drag & Drop':'🧩 Section 3 — Drag & Drop',Practical:'💻 Section 4 — Practical'};
+  let curSec='';
+  log.forEach(r=>{
+    if(r.sec!==curSec){curSec=r.sec;rv.innerHTML+=`<div class="rv-sec">${secLabels[r.sec]||r.sec}</div>`;}
+    const sc={ok:'var(--teal)',part:'var(--gold)',bad:'var(--coral)'}[r.status];
+    const lb={ok:'✅ Correct',part:'⚡ Partial',bad:'❌ Incorrect'}[r.status];
+    rv.innerHTML+=`<div class="rv-item ${r.status}">
+      <div class="rv-top"><span class="rv-num">${r.lbl}</span><span class="rv-tag" style="background:rgba(0,0,0,.3);color:${sc}">${lb}</span></div>
+      <div class="rv-q">${r.qt.slice(0,80)+(r.qt.length>80?'…':'')}</div>
+      <div class="rv-given">Your answer: <em>${esc(r.given)}</em></div>
+      ${r.status!=='ok'&&r.correct?`<div class="rv-correct">✅ Correct: ${r.correct.slice(0,100)}</div>`:''}
+      <div class="rv-pts">${r.earned} / ${r.max} marks</div>
+    </div>`;
+  });
+  if(total>=55)confetti();
+}
+
+// ═══════ FEEDBACK ═══════
+const fbRatings={module:0,lecturer:0};
+function rateStar(group,val){
+  fbRatings[group]=val;
+  document.querySelectorAll(`#fb-stars-${group} .fb-star`).forEach((s,i)=>{
+    s.classList.toggle('lit',i<val);
+  });
+}
+function submitFeedback(){
+  const enjoy=document.getElementById('fb-enjoy').value.trim();
+  const improve=document.getElementById('fb-improve').value.trim();
+  if(!fbRatings.module||!fbRatings.lecturer){
+    alert('Please give a star rating for both the module and Mr. Razeen before submitting.');return;
+  }
+  // Disable all inputs
+  document.querySelectorAll('.fb-star,.fb-ta,.btn-fb-submit').forEach(el=>el.disabled=true);
+  document.querySelectorAll('.fb-ta').forEach(el=>el.style.opacity='.5');
+  document.getElementById('fb-done-name').textContent=playerName;
+  document.getElementById('fb-done').style.display='block';
+  document.querySelector('.btn-fb-submit').style.display='none';
+}
+
+function animNum(el,from,to,dur){const s=Date.now();const t=setInterval(()=>{const p=Math.min((Date.now()-s)/dur,1);el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));if(p>=1)clearInterval(t);},16);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function striptags(h){const d=document.createElement('div');d.innerHTML=h;return d.textContent||'';}
+function confetti(){
+  const cols=['#FFD166','#FF4D6D','#06D6A0','#4CC9F0','#7B2FBE','#fff'];
+  const c=document.getElementById('cf');
+  for(let i=0;i<80;i++){setTimeout(()=>{const p=document.createElement('div');p.className='cfp';p.style.cssText=`left:${Math.random()*100}vw;background:${cols[Math.floor(Math.random()*cols.length)]};animation-duration:${1.5+Math.random()*2.5}s;transform:rotate(${Math.random()*360}deg);width:${5+Math.random()*7}px;height:${7+Math.random()*10}px;border-radius:${Math.random()>.5?'50%':'2px'}`;c.appendChild(p);setTimeout(()=>p.remove(),5000);},Math.random()*2000);}
+}
+</script>
+</body>
+</html>
